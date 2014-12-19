@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">統一發票號碼對獎</string>
+    <string name="title_section1">瀏覽號碼</string>
+    <string name="title_section2">新增號碼</string>
+    <string name="title_section3">發票對獎</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">設定</string>
+    <string name="server_ip">140.112.31.171</string>
+    <string name="server_port">5000</string>
+    <string name="username">peer4321</string>
+
+</resources>
