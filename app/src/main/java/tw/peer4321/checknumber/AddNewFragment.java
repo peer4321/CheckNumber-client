@@ -48,7 +48,7 @@ public class AddNewFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        monthLoader = new MonthLoader(this);
+        monthLoader = new MonthLoader(this, R.id.spAddMonth);
     }
 
     @Override
@@ -57,7 +57,7 @@ public class AddNewFragment extends Fragment {
         View v = inflater.inflate(R.layout.fragment_addnew, container, false);
         monthSpinner = (Spinner) v.findViewById(R.id.spAddMonth);
         dataAdapter = new ArrayAdapter<>(
-                this.getActivity(), android.R.layout.simple_spinner_item, monthLoader.getAllLabels());
+                this.getActivity(), android.R.layout.simple_spinner_item, monthLoader.getMonths());
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         monthSpinner.setAdapter(dataAdapter);
         monthSpinner.setOnItemSelectedListener(new spSelectedListener());

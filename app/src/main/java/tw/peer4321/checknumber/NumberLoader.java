@@ -1,7 +1,8 @@
 package tw.peer4321.checknumber;
 
-import android.content.Context;
+import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.widget.BaseAdapter;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -19,7 +20,10 @@ public class NumberLoader {
 
     private static final String TAG = "NumberLoader";
     private List<Record> records;
-    private static String host, port;
+    private String user, host, port, year, month;
+    private MainActivity activity;
+    private BaseAdapter mAdapter;
+    private boolean valid;
 
     public class Record {
         String number;
@@ -36,16 +40,32 @@ public class NumberLoader {
         return records;
     }
 
-    public NumberLoader (Context context) {
-        records = new ArrayList<>();
-        records.add(new Record("選擇月份", "請從選單中選擇月份"));
-        host = context.getString(R.string.server_ip);
-        port = context.getString(R.string.server_port);
+    public NumberLoader (Fragment f, BaseAdapter baseAdapter) {
+        activity = (MainActivity) f.getActivity();
+        user = activity.getString(R.string.username);
+        host = activity.getString(R.string.server_ip);
+        port = activity.getString(R.string.server_port);
+        mAdapter = baseAdapter;
+        this.clear();
     }
-
-    public NumberLoader(final String user, final String year, final String month) {
-        records = new ArrayList<>();
-        Thread thread = new Thread(new Runnable() {
+    
+    public void clear() {
+        ArrayList<Record> list = new ArrayList<>();
+        list.add(new Record("選擇月份", "請從選單中選擇月份"));
+        records = list;
+    }
+    
+    public void error() {
+        ArrayList<Record> list = new ArrayList<>();
+        list.add(new Record("錯誤", "請重新讀取月份"));
+        records = list;
+    }
+    
+    public void update(final String year, final String month) {
+        this.year = year;
+        this.month = month;
+        // do some valid check?
+        new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -55,9 +75,9 @@ public class NumberLoader {
                     XmlPullParser xpp = factory.newPullParser();
                     Log.d(TAG, "Server: " + host + ":" + port);
                     if (host == null || port == null) throw new IOException();
-                    xpp.setInput(new StringReader(
-                            HttpReader.getData("http://" + host + ":" + port + "/browse.xml?"+
-                            "u="+user+"&y="+year+"&m="+month)));
+                    String url = "http://" + host + ":" + port + "/browse.xml?"+
+                            "u=" + user + "&y=" + year + "&m=" + month;
+                    xpp.setInput(new StringReader(HttpReader.getData(url)));
                     int eventType = xpp.getEventType();
                     while (eventType != XmlPullParser.END_DOCUMENT) {
                         if (eventType == XmlPullParser.START_TAG && xpp.getName().equals("record")) {
@@ -70,7 +90,7 @@ public class NumberLoader {
                                     memo = xpp.nextText();
                                 eventType = xpp.next();
                             }
-                            Log.d(TAG, "number = "+number+", memo = "+memo);
+                            Log.d(TAG, "number = " + number + ", memo = " + memo);
                             if (number != null && memo != null)
                                 list.add(new Record(number, memo));
                         }
@@ -79,16 +99,17 @@ public class NumberLoader {
                     if (list.size() == 0)  list.add(new Record("安安", "這個月份一張發票都沒有喔"));
                     records.clear();
                     records = list;
+                    activity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mAdapter.notifyDataSetChanged();
+                        }
+                    });
                 } catch (XmlPullParserException | IOException e) {
                     e.printStackTrace();
                 }
             }
-        });
-        thread.start();
-        try {
-            thread.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        }).start();
     }
+
 }

@@ -1,8 +1,9 @@
 package tw.peer4321.checknumber;
 
-import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,9 +15,6 @@ import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 /**
  * Created by Peer on 2014/12/18.
  */
@@ -27,25 +25,28 @@ public class BrowseFragment extends Fragment {
     private ArrayAdapter<String> dataAdapter;
     private MyAdapter listAdapter;
     private Spinner monthSpinner;
+    private SwipeRefreshLayout swipeLayout;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        monthLoader = new MonthLoader(this);
+        monthLoader = new MonthLoader(this, R.id.spBrowseMonth);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_browse, container, false);
+        swipeLayout = (SwipeRefreshLayout) v.findViewById(R.id.laySwipe);
+        swipeLayout.setOnRefreshListener(new slRefreshListener());
         monthSpinner = (Spinner) v.findViewById(R.id.spBrowseMonth);
         dataAdapter = new ArrayAdapter<>(
-                this.getActivity(), android.R.layout.simple_spinner_item, monthLoader.getAllLabels());
+                this.getActivity(), android.R.layout.simple_spinner_item, monthLoader.getMonths());
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         monthSpinner.setAdapter(dataAdapter);
         monthSpinner.setOnItemSelectedListener(new spSelectedListener());
         ListView listView = (ListView) v.findViewById(R.id.recordView);
-        listAdapter = new MyAdapter(v.getContext());
+        listAdapter = new MyAdapter(this, v);
         listView.setAdapter(listAdapter);
         return v;
     }
@@ -55,24 +56,21 @@ public class BrowseFragment extends Fragment {
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
             if (parent.getSelectedItem() != null) {
-                if ("--".equals(parent.getSelectedItem().toString())) {
-                    listAdapter.update(parent.getContext());
+                String str = parent.getSelectedItem().toString();
+                Log.d(TAG, "Selected: " + str);
+                if ("--".equals(str)) {
+                    listAdapter.clear();
                     listAdapter.notifyDataSetChanged();
-                } else {
-                    Log.d(TAG, "Selected: " + parent.getSelectedItem().toString());
-                    Pattern pattern = Pattern.compile("\\d{2,}-\\d{4}");
-                    Matcher matcher = pattern.matcher(parent.getSelectedItem().toString());
-                    while (matcher.find()) {
-                        String[] ss = matcher.group().split("-");
-                        String year = ss[0];
-                        String month = ss[1];
-                        Log.d(TAG, "year = " + year + ", month = " + month);
-                        listAdapter.update(parent.getContext().getString(R.string.username), year, month);
-                        Log.d(TAG, "listAdapter has size " + listAdapter.getCount());
-                        listAdapter.notifyDataSetChanged();
-                    }
+                    return;
+                }
+                else if (str.matches("\\d{2,}-\\d{4}")) {
+                    Log.d(TAG, "year = " + str.split("-")[0] + ", month = " + str.split("-")[1]);
+                    listAdapter.update(str.split("-")[0], str.split("-")[1]);
+                    Log.d(TAG, "listAdapter has size " + listAdapter.getCount());
+                    return;
                 }
             }
+            listAdapter.error();
         }
 
         @Override
@@ -85,19 +83,21 @@ public class BrowseFragment extends Fragment {
         private LayoutInflater mInflater;
         private NumberLoader records;
 
-        public MyAdapter(Context context) {
-            this.mInflater = LayoutInflater.from(context);
-            records = new NumberLoader(context);
+        public MyAdapter(Fragment f, View v) {
+            this.mInflater = LayoutInflater.from(v.getContext());
+            records = new NumberLoader(f, this);
         }
 
-        public void update(Context context) {
-            records = new NumberLoader(context);
+        public void clear() {
+            records.clear();
         }
 
-        public void update(String user, String year, String month) {
-            records = new NumberLoader(user, year, month);
+        public void update(String year, String month) {
+            records.update(year, month);
         }
 
+        public void error() { records.error(); }
+        
         @Override
         public int getCount() {
             return records.getRecords().size();
@@ -115,12 +115,41 @@ public class BrowseFragment extends Fragment {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            convertView = mInflater.inflate(R.layout.record_layout, parent, false);
-            TextView tv = (TextView) convertView.findViewById(R.id.textViewTitle);
-            tv.setText(((NumberLoader.Record) getItem(position)).getNumber());
-            tv = (TextView) convertView.findViewById(R.id.textViewMemo);
-            tv.setText(((NumberLoader.Record) getItem(position)).getMemo());
+            ViewHolder holder;
+            if (convertView == null) {
+                convertView = mInflater.inflate(R.layout.record_layout, parent, false);
+                holder = new ViewHolder();
+                holder.title = (TextView) convertView.findViewById(R.id.textViewTitle);
+                holder.memo = (TextView) convertView.findViewById(R.id.textViewMemo);
+                convertView.setTag(holder);
+            }
+            else {
+                holder = (ViewHolder) convertView.getTag();
+            }
+            holder.title.setText(((NumberLoader.Record) getItem(position)).getNumber());
+            holder.memo.setText(((NumberLoader.Record) getItem(position)).getMemo());
             return convertView;
+        }
+    }
+
+    static class ViewHolder {
+        TextView title;
+        TextView memo;
+    }
+
+    private class slRefreshListener implements SwipeRefreshLayout.OnRefreshListener {
+        @Override
+        public void onRefresh() {
+            monthLoader.clear();
+            monthLoader.update();
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    swipeLayout.setRefreshing(false);
+                    monthSpinner.setSelection(0);
+                    //((MainActivity)getActivity()).showToast("Refreshed");
+                }
+            }, 3000);
         }
     }
 }

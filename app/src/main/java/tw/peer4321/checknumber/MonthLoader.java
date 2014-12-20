@@ -2,6 +2,8 @@ package tw.peer4321.checknumber;
 
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -11,6 +13,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Created by Peer on 2014/12/19.
@@ -18,13 +21,35 @@ import java.util.List;
 public class MonthLoader {
 
     private static final String TAG = "MonthLoader";
-    private List<String> months;
+    private List<String> months; // TODO refactor months to ArrayAdapter
+    private String host, port;
+    private boolean valid;
+    private MainActivity activity;
+    private int spinnerId;
+    
+    public MonthLoader(final Fragment fragment, final int id) {
+        activity = (MainActivity) fragment.getActivity();
+        spinnerId = id;
+        host = fragment.getString(R.string.server_ip);
+        port = fragment.getString(R.string.server_port);
+        this.clear();
+        this.update();
+    }
 
-    public MonthLoader(final Fragment fragment) {
-        months = new ArrayList<>();
-        months.add("讀取中");
-
-        Thread thread = new Thread(new Runnable() {
+    public List<String> getMonths() {
+        return months;
+    }
+    
+    public void clear() {
+        valid = false;
+        List<String> list = new ArrayList<>();
+        list.add("讀取中");
+        months = list;
+    }
+    
+    public void update() {
+        if (valid && months.size() > 1) return;
+        new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -33,8 +58,6 @@ public class MonthLoader {
                     XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
                     factory.setNamespaceAware(true);
                     XmlPullParser xpp = factory.newPullParser();
-                    String host = fragment.getString(R.string.server_ip);
-                    String port = fragment.getString(R.string.server_port);
                     Log.d(TAG, "Server: "+host+":"+port);
                     if (host == null || port == null) throw new IOException();
                     xpp.setInput(new StringReader(
@@ -46,31 +69,38 @@ public class MonthLoader {
                         }
                         eventType = xpp.next();
                     }
-                    months.clear();
+                    //months.clear();
                     months = list;
-                    //fragment.refreshSpinner();
+                    activity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Spinner spinner = (Spinner) activity.findViewById(spinnerId);
+                            ArrayAdapter<String> adapter = (ArrayAdapter<String>)spinner.getAdapter();
+                            adapter.clear();
+                            adapter.addAll(months);
+                            adapter.notifyDataSetChanged();
+                        }
+                    });
+                    valid = true;
                 } catch (XmlPullParserException | IOException e) {
                     e.printStackTrace();
+                    activity.showToast("讀取月份失敗");
+                    activity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Spinner spinner = (Spinner) activity.findViewById(spinnerId);
+                            ArrayAdapter<String> adapter = (ArrayAdapter<String>)spinner.getAdapter();
+                            adapter.clear();
+                            ArrayList<String> dummy = new ArrayList<>();
+                            dummy.add("壞掉了，請下拉重新載入");
+                            adapter.addAll(dummy);
+                            adapter.notifyDataSetChanged();
+                        }
+                    });
+                    valid = false;
                 }
             }
-        });
-        thread.start();
-        try {
-            thread.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        /**
-         * TODO:
-         * Need to consider terrible network environment.
-         * Currently it will block until months.xml is loaded,
-         * prefer the spinner to reload after preparing months.xml.
-         * Removing thread.join() may cause runtime error.
-         */
-    }
-
-    public List<String> getAllLabels() {
-        return months;
+        }).start();
     }
 
 }

@@ -30,7 +30,8 @@ public class HttpReader {
             HttpConnectionParams.setSoTimeout(httpParams, timeoutSocket);
             DefaultHttpClient httpClient = new DefaultHttpClient(httpParams);
             HttpResponse response = httpClient.execute(httpGet);
-            return EntityUtils.toString(response.getEntity());
+            if (response != null)
+                return EntityUtils.toString(response.getEntity());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -50,7 +51,8 @@ public class HttpReader {
             HttpConnectionParams.setSoTimeout(httpParams, timeoutSocket);
             DefaultHttpClient httpClient = new DefaultHttpClient(httpParams);
             HttpResponse response = httpClient.execute(httpPost);
-            return EntityUtils.toString(response.getEntity());
+            if (response != null)
+                return EntityUtils.toString(response.getEntity());
         }
         catch (IOException e) {
             e.printStackTrace();
