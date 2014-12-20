@@ -3,7 +3,6 @@ package tw.peer4321.checknumber;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.widget.ArrayAdapter;
-import android.widget.Spinner;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -13,7 +12,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 /**
  * Created by Peer on 2014/12/19.
@@ -25,26 +23,31 @@ public class MonthLoader {
     private String host, port;
     private boolean valid;
     private MainActivity activity;
-    private int spinnerId;
+    private ArrayAdapter<String> mAdapter;
     
-    public MonthLoader(final Fragment fragment, final int id) {
+    public MonthLoader(final Fragment fragment, ArrayAdapter<String> arrayAdapter) {
+        Log.d(TAG, "constructor");
         activity = (MainActivity) fragment.getActivity();
-        spinnerId = id;
         host = fragment.getString(R.string.server_ip);
         port = fragment.getString(R.string.server_port);
-        this.clear();
-        this.update();
+        mAdapter = arrayAdapter;
+        clear();
+        update();
     }
 
-    public List<String> getMonths() {
-        return months;
-    }
-    
     public void clear() {
         valid = false;
-        List<String> list = new ArrayList<>();
-        list.add("讀取中");
-        months = list;
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (mAdapter != null) {
+                    mAdapter.clear();
+                    mAdapter.add("讀取中...");
+                    mAdapter.notifyDataSetChanged();
+                }
+                else Log.e(TAG, "mAdapter == null, unable to update view");
+            }
+        });
     }
     
     public void update() {
@@ -74,11 +77,12 @@ public class MonthLoader {
                     activity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Spinner spinner = (Spinner) activity.findViewById(spinnerId);
-                            ArrayAdapter<String> adapter = (ArrayAdapter<String>)spinner.getAdapter();
-                            adapter.clear();
-                            adapter.addAll(months);
-                            adapter.notifyDataSetChanged();
+                            if (mAdapter != null) {
+                                mAdapter.clear();
+                                mAdapter.addAll(months);
+                                mAdapter.notifyDataSetChanged();
+                            }
+                            else Log.e(TAG, "mAdapter == null, unable to update view");
                         }
                     });
                     valid = true;
@@ -88,19 +92,32 @@ public class MonthLoader {
                     activity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Spinner spinner = (Spinner) activity.findViewById(spinnerId);
-                            ArrayAdapter<String> adapter = (ArrayAdapter<String>)spinner.getAdapter();
-                            adapter.clear();
-                            ArrayList<String> dummy = new ArrayList<>();
-                            dummy.add("壞掉了，請下拉重新載入");
-                            adapter.addAll(dummy);
-                            adapter.notifyDataSetChanged();
+                            if (mAdapter != null) {
+                                ArrayList<String> dummy = new ArrayList<>();
+                                dummy.add("壞掉了，請下拉重新載入");
+                                mAdapter.clear();
+                                mAdapter.addAll(dummy);
+                                mAdapter.notifyDataSetChanged();
+                            }
+                            else Log.e(TAG, "mAdapter == null, unable to update view");
                         }
                     });
                     valid = false;
                 }
             }
         }).start();
+    }
+    
+    private void sleep(int msec) {
+        try {
+            Thread.sleep(msec);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private String randGarbage() {
+        return ((int)(Math.random()*2) == 0)?"AAAAAA":"";
     }
 
 }

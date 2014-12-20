@@ -26,25 +26,19 @@ public class BrowseFragment extends Fragment {
     private MyAdapter listAdapter;
     private Spinner monthSpinner;
     private SwipeRefreshLayout swipeLayout;
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        monthLoader = new MonthLoader(this, R.id.spBrowseMonth);
-    }
-
+    
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_browse, container, false);
-        swipeLayout = (SwipeRefreshLayout) v.findViewById(R.id.laySwipe);
+        swipeLayout = (SwipeRefreshLayout) v.findViewById(R.id.swBrowse);
         swipeLayout.setOnRefreshListener(new slRefreshListener());
-        monthSpinner = (Spinner) v.findViewById(R.id.spBrowseMonth);
-        dataAdapter = new ArrayAdapter<>(
-                this.getActivity(), android.R.layout.simple_spinner_item, monthLoader.getMonths());
+        dataAdapter = new ArrayAdapter<>(this.getActivity(), android.R.layout.simple_spinner_item);
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        monthSpinner = (Spinner) v.findViewById(R.id.spBrowseMonth);
         monthSpinner.setAdapter(dataAdapter);
         monthSpinner.setOnItemSelectedListener(new spSelectedListener());
+        monthLoader = new MonthLoader(this, dataAdapter);
         ListView listView = (ListView) v.findViewById(R.id.recordView);
         listAdapter = new MyAdapter(this, v);
         listView.setAdapter(listAdapter);
@@ -58,7 +52,7 @@ public class BrowseFragment extends Fragment {
             if (parent.getSelectedItem() != null) {
                 String str = parent.getSelectedItem().toString();
                 Log.d(TAG, "Selected: " + str);
-                if ("--".equals(str)) {
+                if ("--".equals(str) || "讀取中...".equals(str)) {
                     listAdapter.clear();
                     listAdapter.notifyDataSetChanged();
                     return;
@@ -71,6 +65,7 @@ public class BrowseFragment extends Fragment {
                 }
             }
             listAdapter.error();
+            listAdapter.notifyDataSetChanged();
         }
 
         @Override
@@ -96,7 +91,9 @@ public class BrowseFragment extends Fragment {
             records.update(year, month);
         }
 
-        public void error() { records.error(); }
+        public void error() {
+            records.error();
+        }
         
         @Override
         public int getCount() {

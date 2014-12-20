@@ -1,7 +1,9 @@
 package tw.peer4321.checknumber;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,8 +36,9 @@ import javax.xml.transform.stream.StreamResult;
 public class AddNewFragment extends Fragment {
 
     private static final String TAG = "AddNewFragment";
-    private MonthLoader monthLoader; // TODO: Merge MonthLoader with BrowseFragment
+    private MonthLoader monthLoader; // TODO: Merge MonthLoader with BrowseFragment?
     private ArrayAdapter<String> dataAdapter;
+    private SwipeRefreshLayout swipeLayout;
 
     Spinner monthSpinner;
     EditText numberText;
@@ -46,21 +49,17 @@ public class AddNewFragment extends Fragment {
     private String memo;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        monthLoader = new MonthLoader(this, R.id.spAddMonth);
-    }
-
-    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_addnew, container, false);
-        monthSpinner = (Spinner) v.findViewById(R.id.spAddMonth);
-        dataAdapter = new ArrayAdapter<>(
-                this.getActivity(), android.R.layout.simple_spinner_item, monthLoader.getMonths());
+        swipeLayout = (SwipeRefreshLayout) v.findViewById(R.id.swAddNew);
+        swipeLayout.setOnRefreshListener(new slRefreshListener());
+        dataAdapter = new ArrayAdapter<>(this.getActivity(), android.R.layout.simple_spinner_item);
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        monthSpinner = (Spinner) v.findViewById(R.id.spAddMonth);
         monthSpinner.setAdapter(dataAdapter);
         monthSpinner.setOnItemSelectedListener(new spSelectedListener());
+        monthLoader = new MonthLoader(this, dataAdapter);
         numberText = (EditText) v.findViewById(R.id.etAddNumber);
         memoText = (EditText) v.findViewById(R.id.etAddMemo);
         Button button = (Button) v.findViewById(R.id.btAddReset);
@@ -80,6 +79,22 @@ public class AddNewFragment extends Fragment {
         }
         @Override
         public void onNothingSelected(AdapterView<?> parent) {
+        }
+    }
+
+    private class slRefreshListener implements SwipeRefreshLayout.OnRefreshListener {
+        @Override
+        public void onRefresh() {
+            monthLoader.clear();
+            monthLoader.update();
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    swipeLayout.setRefreshing(false);
+                    monthSpinner.setSelection(0);
+                    //((MainActivity)getActivity()).showToast("Refreshed");
+                }
+            }, 3000);
         }
     }
 
