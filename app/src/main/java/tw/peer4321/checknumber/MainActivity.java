@@ -15,6 +15,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 
 public class MainActivity extends ActionBarActivity implements ActionBar.TabListener {
@@ -191,4 +192,12 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
         }
     }
 
+    public void showToast(final String toast) {
+        runOnUiThread(new Runnable() {
+            public void run() {
+                Toast.makeText(MainActivity.this, toast, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+    
 }

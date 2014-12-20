@@ -26,6 +26,7 @@ public class BrowseFragment extends Fragment {
     private MonthLoader monthLoader;
     private ArrayAdapter<String> dataAdapter;
     private MyAdapter listAdapter;
+    private Spinner monthSpinner;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -37,50 +38,49 @@ public class BrowseFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_browse, container, false);
-        Spinner spinner = (Spinner) v.findViewById(R.id.month);
+        monthSpinner = (Spinner) v.findViewById(R.id.spBrowseMonth);
         dataAdapter = new ArrayAdapter<>(
                 this.getActivity(), android.R.layout.simple_spinner_item, monthLoader.getAllLabels());
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner.setAdapter(dataAdapter);
-        AdapterView.OnItemSelectedListener listener = new MyListener();
-        spinner.setOnItemSelectedListener(listener);
+        monthSpinner.setAdapter(dataAdapter);
+        monthSpinner.setOnItemSelectedListener(new spSelectedListener());
         ListView listView = (ListView) v.findViewById(R.id.recordView);
         listAdapter = new MyAdapter(v.getContext());
         listView.setAdapter(listAdapter);
         return v;
     }
 
-    class MyListener implements AdapterView.OnItemSelectedListener {
+    private class spSelectedListener implements AdapterView.OnItemSelectedListener {
 
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-            if (parent.getSelectedItem().toString().equals("--")) {
-                listAdapter.update(parent.getContext());
-                listAdapter.notifyDataSetChanged();
-            }
-            else {
-                Log.d(TAG, "Selected: " + parent.getSelectedItem().toString());
-                Pattern pattern = Pattern.compile("\\d{2,}-\\d{4}");
-                Matcher matcher = pattern.matcher(parent.getSelectedItem().toString());
-                while (matcher.find()) {
-                    String[] ss = matcher.group().split("-");
-                    String year = ss[0];
-                    String month = ss[1];
-                    Log.d(TAG, "year = " + year + ", month = " + month);
-                    listAdapter.update(parent.getContext().getString(R.string.username), year, month);
-                    Log.d(TAG, "listAdapter has size " + listAdapter.getCount());
+            if (parent.getSelectedItem() != null) {
+                if ("--".equals(parent.getSelectedItem().toString())) {
+                    listAdapter.update(parent.getContext());
                     listAdapter.notifyDataSetChanged();
+                } else {
+                    Log.d(TAG, "Selected: " + parent.getSelectedItem().toString());
+                    Pattern pattern = Pattern.compile("\\d{2,}-\\d{4}");
+                    Matcher matcher = pattern.matcher(parent.getSelectedItem().toString());
+                    while (matcher.find()) {
+                        String[] ss = matcher.group().split("-");
+                        String year = ss[0];
+                        String month = ss[1];
+                        Log.d(TAG, "year = " + year + ", month = " + month);
+                        listAdapter.update(parent.getContext().getString(R.string.username), year, month);
+                        Log.d(TAG, "listAdapter has size " + listAdapter.getCount());
+                        listAdapter.notifyDataSetChanged();
+                    }
                 }
             }
         }
 
         @Override
         public void onNothingSelected(AdapterView<?> parent) {
-
         }
     }
 
-    public class MyAdapter extends BaseAdapter {
+    private class MyAdapter extends BaseAdapter {
 
         private LayoutInflater mInflater;
         private NumberLoader records;
@@ -123,11 +123,4 @@ public class BrowseFragment extends Fragment {
             return convertView;
         }
     }
-
-    public void refreshSpinner() {
-        dataAdapter.clear();
-        dataAdapter.addAll(monthLoader.getAllLabels());
-        dataAdapter.notifyDataSetChanged();
-    }
-
 }

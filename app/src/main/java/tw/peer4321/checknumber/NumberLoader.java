@@ -38,7 +38,7 @@ public class NumberLoader {
 
     public NumberLoader (Context context) {
         records = new ArrayList<>();
-        records.add(new Record("安安", "請先在上面選擇月份"));
+        records.add(new Record("選擇月份", "請從選單中選擇月份"));
         host = context.getString(R.string.server_ip);
         port = context.getString(R.string.server_port);
     }

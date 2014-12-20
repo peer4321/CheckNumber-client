@@ -1,5 +1,6 @@
 package tw.peer4321.checknumber;
 
+import android.support.v4.app.Fragment;
 import android.util.Log;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -19,7 +20,7 @@ public class MonthLoader {
     private static final String TAG = "MonthLoader";
     private List<String> months;
 
-    public MonthLoader(final BrowseFragment fragment) {
+    public MonthLoader(final Fragment fragment) {
         months = new ArrayList<>();
         months.add("讀取中");
 
@@ -59,6 +60,13 @@ public class MonthLoader {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        /**
+         * TODO:
+         * Need to consider terrible network environment.
+         * Currently it will block until months.xml is loaded,
+         * prefer the spinner to reload after preparing months.xml.
+         * Removing thread.join() may cause runtime error.
+         */
     }
 
     public List<String> getAllLabels() {

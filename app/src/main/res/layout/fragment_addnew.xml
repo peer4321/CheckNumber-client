@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+    <GridLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        >
+    
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="發票月份"
+            android:id="@+id/tvAddMonth"
+            android:layout_row="0"
+            android:layout_column="0"
+            android:padding="10dp"
+            />
+    
+        <Spinner
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/spAddMonth"
+            android:layout_row="0"
+            android:layout_column="1"
+            android:padding="10dp"
+            />
+        
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="發票號碼"
+            android:id="@+id/tvAddNumber"
+            android:layout_row="1"
+            android:layout_column="0"
+            android:padding="10dp"
+            />
+    
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:ems="10"
+            android:id="@+id/etAddNumber"
+            android:layout_row="1"
+            android:layout_column="1"
+            android:padding="10dp"
+            android:maxLength="8"
+            android:hint="請輸入8位數字"
+            />
+    
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="備註欄"
+            android:id="@+id/tvAddMemo"
+            android:layout_row="2"
+            android:layout_column="0"
+            android:padding="10dp"
+            />
+    
+    
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/etAddMemo"
+            android:layout_row="2"
+            android:layout_column="1"
+            android:padding="10dp"
+            android:inputType="textMultiLine"
+            android:hint="(選填)"
+            />
+    </GridLayout>
+    
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true">
+        <!--android:background="@android:drawable/bottom_bar"-->
+
+
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="重設"
+            android:id="@+id/btAddReset"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_toLeftOf="@+id/centerPointAdd"
+            android:layout_toStartOf="@+id/centerPointAdd"
+            />
+
+        <TextView
+            android:id="@+id/centerPointAdd"
+            android:text=""
+            android:layout_width="0dip"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="送出"
+            android:id="@+id/btAddSubmit"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_toRightOf="@+id/centerPointAdd"
+            android:layout_toEndOf="@+id/centerPointAdd"/>
+    </RelativeLayout>
+
+</RelativeLayout>
