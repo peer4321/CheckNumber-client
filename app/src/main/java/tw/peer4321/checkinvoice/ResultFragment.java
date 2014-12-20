@@ -1,4 +1,4 @@
-package tw.peer4321.checknumber;
+package tw.peer4321.checkinvoice;
 
 import android.os.Bundle;
 import android.os.Handler;
@@ -18,35 +18,50 @@ import android.widget.TextView;
 /**
  * Created by Peer on 2014/12/18.
  */
-public class BrowseFragment extends Fragment {
+public class ResultFragment extends Fragment {
 
-    private static final String TAG = "BrowseFragment";
+    private final String TAG = "ResultFragment";
+    private SwipeRefreshLayout swipeLayout;
     private MonthLoader monthLoader;
     private ArrayAdapter<String> dataAdapter;
-    private MyAdapter listAdapter;
     private Spinner monthSpinner;
-    private SwipeRefreshLayout swipeLayout;
-    
+    private MyBaseAdapter listAdapter;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.fragment_browse, container, false);
-        swipeLayout = (SwipeRefreshLayout) v.findViewById(R.id.swBrowse);
+        View v = inflater.inflate(R.layout.fragment_result, container, false);
+        swipeLayout = (SwipeRefreshLayout) v.findViewById(R.id.swResult);
         swipeLayout.setOnRefreshListener(new slRefreshListener());
         dataAdapter = new ArrayAdapter<>(this.getActivity(), android.R.layout.simple_spinner_item);
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        monthSpinner = (Spinner) v.findViewById(R.id.spBrowseMonth);
+        monthSpinner = (Spinner) v.findViewById(R.id.spResultMonth);
         monthSpinner.setAdapter(dataAdapter);
         monthSpinner.setOnItemSelectedListener(new spSelectedListener());
         monthLoader = new MonthLoader(this, dataAdapter);
-        ListView listView = (ListView) v.findViewById(R.id.recordView);
-        listAdapter = new MyAdapter(this, v);
+        ListView listView = (ListView) v.findViewById(R.id.resultView);
+        listAdapter = new MyBaseAdapter(this, v);
         listView.setAdapter(listAdapter);
         return v;
     }
 
-    private class spSelectedListener implements AdapterView.OnItemSelectedListener {
+    private class slRefreshListener implements SwipeRefreshLayout.OnRefreshListener {
+        @Override
+        public void onRefresh() {
+            monthLoader.clear();
+            monthLoader.update();
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    swipeLayout.setRefreshing(false);
+                    monthSpinner.setSelection(0);
+                    //((MainActivity)getActivity()).showToast("Refreshed");
+                }
+            }, 3000);
+        }
+    }
 
+    private class spSelectedListener implements android.widget.AdapterView.OnItemSelectedListener {
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
             if (parent.getSelectedItem() != null) {
@@ -67,42 +82,41 @@ public class BrowseFragment extends Fragment {
             listAdapter.error();
             listAdapter.notifyDataSetChanged();
         }
-
         @Override
         public void onNothingSelected(AdapterView<?> parent) {
         }
     }
 
-    private class MyAdapter extends BaseAdapter {
+    private class MyBaseAdapter extends BaseAdapter {
 
         private LayoutInflater mInflater;
-        private NumberLoader records;
+        private ResultLoader results;
 
-        public MyAdapter(Fragment f, View v) {
+        public MyBaseAdapter(Fragment f, View v) {
             this.mInflater = LayoutInflater.from(v.getContext());
-            records = new NumberLoader(f, this);
+            results = new ResultLoader(f, this);
         }
 
         public void clear() {
-            records.clear();
+            results.clear();
         }
 
         public void update(String year, String month) {
-            records.update(year, month);
+            results.update(year, month);
         }
 
         public void error() {
-            records.error();
+            results.error();
         }
-        
+
         @Override
         public int getCount() {
-            return records.getRecords().size();
+            return results.getResults().size();
         }
 
         @Override
         public Object getItem(int position) {
-            return records.getRecords().get(position);
+            return results.getResults().get(position);
         }
 
         @Override
@@ -123,8 +137,8 @@ public class BrowseFragment extends Fragment {
             else {
                 holder = (ViewHolder) convertView.getTag();
             }
-            holder.title.setText(((NumberLoader.Record) getItem(position)).getNumber());
-            holder.memo.setText(((NumberLoader.Record) getItem(position)).getMemo());
+            holder.title.setText(((ResultLoader.Result) getItem(position)).getTitle());
+            holder.memo.setText(((ResultLoader.Result) getItem(position)).getText());
             return convertView;
         }
     }
@@ -132,21 +146,5 @@ public class BrowseFragment extends Fragment {
     static class ViewHolder {
         TextView title;
         TextView memo;
-    }
-
-    private class slRefreshListener implements SwipeRefreshLayout.OnRefreshListener {
-        @Override
-        public void onRefresh() {
-            monthLoader.clear();
-            monthLoader.update();
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    swipeLayout.setRefreshing(false);
-                    monthSpinner.setSelection(0);
-                    //((MainActivity)getActivity()).showToast("Refreshed");
-                }
-            }, 3000);
-        }
     }
 }

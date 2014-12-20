@@ -1,4 +1,4 @@
-package tw.peer4321.checknumber;
+package tw.peer4321.checkinvoice;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

@@ -1,4 +1,4 @@
-package tw.peer4321.checknumber;
+package tw.peer4321.checkinvoice;
 
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -19,7 +19,6 @@ import java.util.List;
 public class MonthLoader {
 
     private static final String TAG = "MonthLoader";
-    private List<String> months; // TODO refactor months to ArrayAdapter
     private String host, port;
     private boolean valid;
     private MainActivity activity;
@@ -51,12 +50,12 @@ public class MonthLoader {
     }
     
     public void update() {
-        if (valid && months.size() > 1) return;
+        if (valid && mAdapter.getCount() > 1) return;
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    List<String> list = new ArrayList<>();
+                    final List<String> list = new ArrayList<>();
                     list.add("--");
                     XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
                     factory.setNamespaceAware(true);
@@ -72,14 +71,12 @@ public class MonthLoader {
                         }
                         eventType = xpp.next();
                     }
-                    //months.clear();
-                    months = list;
                     activity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             if (mAdapter != null) {
                                 mAdapter.clear();
-                                mAdapter.addAll(months);
+                                mAdapter.addAll(list);
                                 mAdapter.notifyDataSetChanged();
                             }
                             else Log.e(TAG, "mAdapter == null, unable to update view");
