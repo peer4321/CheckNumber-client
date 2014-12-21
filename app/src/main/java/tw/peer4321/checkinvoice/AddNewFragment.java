@@ -1,5 +1,6 @@
 package tw.peer4321.checkinvoice;
 
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
@@ -61,6 +62,7 @@ public class AddNewFragment extends Fragment {
         monthSpinner.setOnItemSelectedListener(new spSelectedListener());
         monthLoader = new MonthLoader(this, dataAdapter);
         numberText = (EditText) v.findViewById(R.id.etAddNumber);
+        numberText.setRawInputType(Configuration.KEYBOARD_12KEY);
         memoText = (EditText) v.findViewById(R.id.etAddMemo);
         Button button = (Button) v.findViewById(R.id.btAddReset);
         button.setOnClickListener(new btResetListener());

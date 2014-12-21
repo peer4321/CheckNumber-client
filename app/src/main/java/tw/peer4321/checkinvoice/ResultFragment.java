@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
@@ -26,6 +27,7 @@ public class ResultFragment extends Fragment {
     private ArrayAdapter<String> dataAdapter;
     private Spinner monthSpinner;
     private MyBaseAdapter listAdapter;
+    private ListView listView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -39,9 +41,10 @@ public class ResultFragment extends Fragment {
         monthSpinner.setAdapter(dataAdapter);
         monthSpinner.setOnItemSelectedListener(new spSelectedListener());
         monthLoader = new MonthLoader(this, dataAdapter);
-        ListView listView = (ListView) v.findViewById(R.id.resultView);
+        listView = (ListView) v.findViewById(R.id.resultView);
         listAdapter = new MyBaseAdapter(this, v);
         listView.setAdapter(listAdapter);
+        listView.setOnScrollListener(new lsScrollListener());
         return v;
     }
 
@@ -73,9 +76,7 @@ public class ResultFragment extends Fragment {
                     return;
                 }
                 else if (str.matches("\\d{2,}-\\d{4}")) {
-                    Log.d(TAG, "year = " + str.split("-")[0] + ", month = " + str.split("-")[1]);
                     listAdapter.update(str.split("-")[0], str.split("-")[1]);
-                    Log.d(TAG, "listAdapter has size " + listAdapter.getCount());
                     return;
                 }
             }
@@ -146,5 +147,22 @@ public class ResultFragment extends Fragment {
     static class ViewHolder {
         TextView title;
         TextView memo;
+    }
+
+    /**
+     * Fix ListView with SwipeRefreshLayout 
+     * http://nlopez.io/swiperefreshlayout-with-listview-done-right/ 
+     */
+    private class lsScrollListener implements AbsListView.OnScrollListener {
+        @Override
+        public void onScrollStateChanged(AbsListView view, int scrollState) {
+        }
+        @Override
+        public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+            int topRowVerticalPosition =
+                    (listView == null || listView.getChildCount() == 0) ?
+                            0 : listView.getChildAt(0).getTop();
+            swipeLayout.setEnabled(topRowVerticalPosition >= 0);
+        }
     }
 }

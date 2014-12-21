@@ -39,12 +39,9 @@ public class MonthLoader {
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (mAdapter != null) {
-                    mAdapter.clear();
-                    mAdapter.add("讀取中...");
-                    mAdapter.notifyDataSetChanged();
-                }
-                else Log.e(TAG, "mAdapter == null, unable to update view");
+                mAdapter.clear();
+                mAdapter.add("讀取中...");
+                mAdapter.notifyDataSetChanged();
             }
         });
     }
@@ -74,12 +71,9 @@ public class MonthLoader {
                     activity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            if (mAdapter != null) {
-                                mAdapter.clear();
-                                mAdapter.addAll(list);
-                                mAdapter.notifyDataSetChanged();
-                            }
-                            else Log.e(TAG, "mAdapter == null, unable to update view");
+                            mAdapter.clear();
+                            mAdapter.addAll(list);
+                            mAdapter.notifyDataSetChanged();
                         }
                     });
                     valid = true;
@@ -89,14 +83,11 @@ public class MonthLoader {
                     activity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            if (mAdapter != null) {
-                                ArrayList<String> dummy = new ArrayList<>();
-                                dummy.add("壞掉了，請下拉重新載入");
-                                mAdapter.clear();
-                                mAdapter.addAll(dummy);
-                                mAdapter.notifyDataSetChanged();
-                            }
-                            else Log.e(TAG, "mAdapter == null, unable to update view");
+                            ArrayList<String> dummy = new ArrayList<>();
+                            dummy.add("壞掉了，請下拉重新載入");
+                            mAdapter.clear();
+                            mAdapter.addAll(dummy);
+                            mAdapter.notifyDataSetChanged();
                         }
                     });
                     valid = false;
