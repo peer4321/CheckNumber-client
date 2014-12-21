@@ -60,7 +60,7 @@ public class BrowseFragment extends Fragment {
                                     ContextMenuInfo menuInfo) {
         Log.d(TAG, "onCreateContextMenu");
         super.onCreateContextMenu(menu, v, menuInfo);
-        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
+        AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
         NumberLoader.Record item = (NumberLoader.Record) listAdapter.getItem(info.position);
         String number = item.getNumber();
         if (number.matches("\\d{8}")) {
@@ -72,15 +72,22 @@ public class BrowseFragment extends Fragment {
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         Log.d(TAG, "onContextItemSelected");
+        MainActivity activity = (MainActivity) getActivity();
         AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+        NumberLoader.Record record = (NumberLoader.Record) listAdapter.getItem(info.position);
+        int monthPosition = monthSpinner.getSelectedItemPosition();
+        String number = record.getNumber(), memo = record.getMemo();
         switch (item.getItemId()) {
             case R.id.recordEdit:
                 Log.d(TAG, "edit");
-                //recordEdit(info.id);
+                activity.setEditPage(monthPosition, number, memo);
                 return true;
             case R.id.recordDelete:
                 Log.d(TAG, "delete");
-                //recordDelete(info.id);
+                // TODO: Confirm check
+                String str = dataAdapter.getItem(monthPosition);
+                String year = str.split("-")[0], month = str.split("-")[1];
+                listAdapter.delete(year, month, number);
                 return true;
             default:
                 return super.onContextItemSelected(item);
@@ -120,7 +127,7 @@ public class BrowseFragment extends Fragment {
                 @Override
                 public void run() {
                     swipeLayout.setRefreshing(false);
-                    monthSpinner.setSelection(0);
+                    //monthSpinner.setSelection(0);
                     //((MainActivity)getActivity()).showToast("Refreshed");
                 }
             }, 3000);
@@ -142,6 +149,11 @@ public class BrowseFragment extends Fragment {
         }
 
         public void update(String year, String month) {
+            records.update(year, month);
+        }
+        
+        public void delete(String year, String month, String number) {
+            records.delete(year, month, number);
             records.update(year, month);
         }
 

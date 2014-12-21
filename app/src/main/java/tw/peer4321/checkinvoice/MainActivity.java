@@ -169,4 +169,12 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
             }
         });
     }
+    
+    public void setEditPage(int monthSelection, String number, String memo) {
+        EditFragment fragment = (EditFragment) mSectionsPagerAdapter.getItem(1);
+        fragment.monthSpinner.setSelection(monthSelection);
+        fragment.numberText.setText(number);
+        fragment.memoText.setText(memo);
+        mViewPager.setCurrentItem(1, true);
+    }
 }

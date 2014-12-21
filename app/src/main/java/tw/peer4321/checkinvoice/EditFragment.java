@@ -16,21 +16,6 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-
-import java.io.StringWriter;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-
 /**
  * Created by Peer on 2014/12/18.
  */
@@ -150,59 +135,34 @@ public class EditFragment extends Fragment {
         }
 
         private void buildXmlAndSubmit() {
-            try {
-                DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-                DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-                // root element
-                Document doc = docBuilder.newDocument();
-                Element rootElement = doc.createElement("record");
-                doc.appendChild(rootElement);
-                // children
-                Element userElement = doc.createElement("user");
-                userElement.appendChild(doc.createTextNode(user));
-                Element yearElement = doc.createElement("year");
-                yearElement.appendChild(doc.createTextNode(month.split("-")[0]));
-                Element monthElement = doc.createElement("month");
-                monthElement.appendChild(doc.createTextNode(month.split("-")[1]));
-                Element numberElement = doc.createElement("number");
-                numberElement.appendChild(doc.createTextNode(number));
-                Element memoElement = doc.createElement("memo");
-                memoElement.appendChild(doc.createTextNode(memo));
-                rootElement.appendChild(userElement);
-                rootElement.appendChild(yearElement);
-                rootElement.appendChild(monthElement);
-                rootElement.appendChild(numberElement);
-                rootElement.appendChild(memoElement);
-                TransformerFactory transformerFactory = TransformerFactory.newInstance();
-                Transformer transformer = transformerFactory.newTransformer();
-                StringWriter writer = new StringWriter();
-                transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-                transformer.transform(new DOMSource(doc), new StreamResult(writer));
-                final String output = writer.getBuffer().toString().replaceAll("\n|\r", "");
-                //Log.d(TAG, output);
-                new Thread() {
-                    @Override
-                    public void run() {
-                        String response = HttpReader.postData("http://"+host+":"+port+"/submit", output.getBytes());
-                        if (response != null) {
-                            switch (response) {
-                                case "Inserted":
-                                    ((MainActivity) getActivity()).showToast("新增成功");
-                                    break;
-                                case "Updated":
-                                    ((MainActivity) getActivity()).showToast("更新成功");
-                                    break;
-                                default:
-                                    ((MainActivity) getActivity()).showToast("上傳失敗");
-                                    break;
-                            }
+            final StringBuilder sb = new StringBuilder();
+            sb.append("<record>")
+                    .append("<user>").append(user).append("</user>")
+                    .append("<year>").append(month.split("-")[0]).append("</year>")
+                    .append("<month>").append(month.split("-")[1]).append("</month>")
+                    .append("<number>").append(number).append("</number>")
+                    .append("<memo>").append(memo).append("</memo>")
+                    .append("</record>");
+            new Thread() {
+                @Override
+                public void run() {
+                    String response = HttpReader.postData("http://" + host + ":" + port + "/submit",
+                            sb.toString().getBytes());
+                    if (response != null) {
+                        switch (response) {
+                            case "Inserted":
+                                ((MainActivity) getActivity()).showToast("新增成功");
+                                break;
+                            case "Updated":
+                                ((MainActivity) getActivity()).showToast("更新成功");
+                                break;
+                            default:
+                                ((MainActivity) getActivity()).showToast("上傳失敗");
+                                break;
                         }
                     }
-                }.start();
-
-            } catch (ParserConfigurationException | TransformerException e) {
-                e.printStackTrace();
-            }
+                }
+            }.start();
         }
     }
 }

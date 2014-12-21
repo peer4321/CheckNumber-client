@@ -1,5 +1,6 @@
 package tw.peer4321.checkinvoice;
 
+import android.os.PatternMatcher;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.widget.BaseAdapter;
@@ -12,6 +13,8 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by Peer on 2014/12/19.
@@ -29,8 +32,7 @@ public class NumberLoader {
         String number;
         String memo;
         public Record (String n, String m) {
-            number = n;
-            memo = m;
+            number = n; memo = m;
         }
         public String getNumber() { return number; }
         public String getMemo() { return memo; }
@@ -68,8 +70,8 @@ public class NumberLoader {
         new Thread(new Runnable() {
             @Override
             public void run() {
+                List<Record> list = new ArrayList<>();
                 try {
-                    List<Record> list = new ArrayList<>();
                     XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
                     factory.setNamespaceAware(true);
                     XmlPullParser xpp = factory.newPullParser();
@@ -79,37 +81,96 @@ public class NumberLoader {
                             "u=" + user + "&y=" + year + "&m=" + month;
                     xpp.setInput(new StringReader(HttpReader.getData(url)));
                     int eventType = xpp.getEventType();
+                    String name;
+                    String number = "", memo = "";
                     while (eventType != XmlPullParser.END_DOCUMENT) {
-                        if (eventType == XmlPullParser.START_TAG && xpp.getName().equals("record")) {
-                            String number = "", memo = "";
-                            eventType = xpp.next();
-                            while (!(eventType == XmlPullParser.END_TAG && xpp.getName().equals("record"))) {
-                                if (eventType == XmlPullParser.START_TAG && xpp.getName().equals("number"))
-                                    number = xpp.nextText();
-                                if (eventType == XmlPullParser.START_TAG && xpp.getName().equals("memo"))
-                                    memo = xpp.nextText();
-                                eventType = xpp.next();
-                            }
-                            Log.d(TAG, "number = " + number + ", memo = " + memo);
-                            if (number != null && memo != null)
-                                list.add(new Record(number, memo));
+                        switch (eventType) {
+                            case XmlPullParser.START_TAG:
+                                name = xpp.getName();
+                                if (name != null) switch (name) {
+                                    case "record":
+                                        number = memo = ""; break;
+                                    case "number":
+                                        number = xpp.nextText(); break;
+                                    case "memo":
+                                        memo = xpp.nextText(); break;
+                                }
+                            case XmlPullParser.END_TAG:
+                                name = xpp.getName();
+                                if ("record".equals(name)) {
+                                    if (!number.equals("") && !memo.equals("")) {
+                                        Log.d(TAG, "number = " + number + ", memo = " + memo);
+                                        list.add(new Record(number, memo));
+                                    }
+                                }
                         }
                         eventType = xpp.next();
                     }
-                    if (list.size() == 0)  list.add(new Record("安安", "這個月份一張發票都沒有喔"));
-                    records.clear();
-                    records = list;
-                    activity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mAdapter.notifyDataSetChanged();
-                        }
-                    });
                 } catch (XmlPullParserException | IOException e) {
                     e.printStackTrace();
                 }
+                if (list.size() == 0)  list.add(new Record("安安", "這個月份一張發票都沒有喔"));
+                records = list;
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mAdapter.notifyDataSetChanged();
+                    }
+                });
             }
         }).start();
+    }
+    
+    public void delete(final String year, final String month, final String number) {
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String message = null;
+                final String display;
+                try {
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("<record>")
+                            .append("<user>").append(user).append("</user>")
+                            .append("<year>").append(year).append("</year>")
+                            .append("<month>").append(month).append("</month>")
+                            .append("<number>").append(number).append("</number>")
+                            .append("</record>");
+                    Log.d(TAG, "Server: " + host + ":" + port);
+                    if (host == null || port == null) throw new IOException();
+                    String response = HttpReader.postData("http://"+host+":"+port+"/delete.xml",
+                            sb.toString().getBytes());
+                    if (response != null) {
+                        Pattern pattern = Pattern.compile("<message>[\\w\\s]*</message>");
+                        Matcher match = pattern.matcher(response);
+                        if (match.find()) {
+                            message = match.group().split("<message>")[1].split("</message>")[0];
+                        }
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                if (message == null) {
+                    display = "刪除失敗";
+                }
+                else switch (message) {
+                    case "Succeed":
+                        display = "刪除成功";
+                        break;
+                    case "Nothing":
+                        display = "找不到指定項目";
+                        break;
+                    default:
+                        display = "刪除失敗";
+                }
+                activity.showToast(display);
+            }
+        });
+        thread.start();
+        try {
+            thread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
 }
