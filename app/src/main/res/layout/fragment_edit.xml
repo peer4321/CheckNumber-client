@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.v4.widget.SwipeRefreshLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/swAddNew"
+    android:id="@+id/swEdit"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:tools="http://schemas.android.com/tools"
@@ -33,7 +33,7 @@
             <Spinner
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/spAddMonth"
+                android:id="@+id/spEditMonth"
                 android:layout_row="0"
                 android:layout_column="1"
                 android:padding="10dp"
@@ -55,7 +55,7 @@
                 android:layout_height="wrap_content"
                 android:inputType="number"
                 android:ems="10"
-                android:id="@+id/etAddNumber"
+                android:id="@+id/etEditNumber"
                 android:layout_row="1"
                 android:layout_column="1"
                 android:padding="10dp"
@@ -77,7 +77,7 @@
             <EditText
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/etAddMemo"
+                android:id="@+id/etEditMemo"
                 android:layout_row="2"
                 android:layout_column="1"
                 android:padding="10dp"
@@ -96,7 +96,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/text_reset"
-                android:id="@+id/btAddReset"
+                android:id="@+id/btEditReset"
                 android:layout_alignParentLeft="true"
                 android:layout_alignParentStart="true"
                 android:layout_toLeftOf="@+id/centerPointAdd"
@@ -114,7 +114,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/text_submit"
-                android:id="@+id/btAddSubmit"
+                android:id="@+id/btEditSubmit"
                 android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true"
                 android:layout_toRightOf="@+id/centerPointAdd"

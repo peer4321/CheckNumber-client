@@ -5,11 +5,17 @@ import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
+import android.widget.Adapter;
 import android.widget.AdapterView;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
@@ -45,7 +51,40 @@ public class BrowseFragment extends Fragment {
         listAdapter = new MyBaseAdapter(this, v);
         listView.setAdapter(listAdapter);
         listView.setOnScrollListener(new lsScrollListener());
+        registerForContextMenu(listView);
         return v;
+    }
+    
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v,
+                                    ContextMenuInfo menuInfo) {
+        Log.d(TAG, "onCreateContextMenu");
+        super.onCreateContextMenu(menu, v, menuInfo);
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
+        NumberLoader.Record item = (NumberLoader.Record) listAdapter.getItem(info.position);
+        String number = item.getNumber();
+        if (number.matches("\\d{8}")) {
+            MenuInflater inflater = getActivity().getMenuInflater();
+            inflater.inflate(R.menu.menu_record, menu);
+        }
+    }
+    
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        Log.d(TAG, "onContextItemSelected");
+        AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+        switch (item.getItemId()) {
+            case R.id.recordEdit:
+                Log.d(TAG, "edit");
+                //recordEdit(info.id);
+                return true;
+            case R.id.recordDelete:
+                Log.d(TAG, "delete");
+                //recordDelete(info.id);
+                return true;
+            default:
+                return super.onContextItemSelected(item);
+        }
     }
 
     private class spSelectedListener implements AdapterView.OnItemSelectedListener {

@@ -34,9 +34,9 @@ import javax.xml.transform.stream.StreamResult;
 /**
  * Created by Peer on 2014/12/18.
  */
-public class AddNewFragment extends Fragment {
+public class EditFragment extends Fragment {
 
-    private static final String TAG = "AddNewFragment";
+    private static final String TAG = "EditFragment";
     private MonthLoader monthLoader; // TODO: Merge MonthLoader with BrowseFragment?
     private ArrayAdapter<String> dataAdapter;
     private SwipeRefreshLayout swipeLayout;
@@ -52,21 +52,21 @@ public class AddNewFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.fragment_addnew, container, false);
-        swipeLayout = (SwipeRefreshLayout) v.findViewById(R.id.swAddNew);
+        View v = inflater.inflate(R.layout.fragment_edit, container, false);
+        swipeLayout = (SwipeRefreshLayout) v.findViewById(R.id.swEdit);
         swipeLayout.setOnRefreshListener(new slRefreshListener());
         dataAdapter = new ArrayAdapter<>(this.getActivity(), android.R.layout.simple_spinner_item);
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        monthSpinner = (Spinner) v.findViewById(R.id.spAddMonth);
+        monthSpinner = (Spinner) v.findViewById(R.id.spEditMonth);
         monthSpinner.setAdapter(dataAdapter);
         monthSpinner.setOnItemSelectedListener(new spSelectedListener());
         monthLoader = new MonthLoader(this, dataAdapter);
-        numberText = (EditText) v.findViewById(R.id.etAddNumber);
+        numberText = (EditText) v.findViewById(R.id.etEditNumber);
         numberText.setRawInputType(Configuration.KEYBOARD_12KEY);
-        memoText = (EditText) v.findViewById(R.id.etAddMemo);
-        Button button = (Button) v.findViewById(R.id.btAddReset);
+        memoText = (EditText) v.findViewById(R.id.etEditMemo);
+        Button button = (Button) v.findViewById(R.id.btEditReset);
         button.setOnClickListener(new btResetListener());
-        button = (Button) v.findViewById(R.id.btAddSubmit);
+        button = (Button) v.findViewById(R.id.btEditSubmit);
         button.setOnClickListener(new btSubmitListener());
         return v;
     }
