@@ -1,5 +1,7 @@
 package tw.peer4321.checkinvoice;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
@@ -87,10 +89,20 @@ public class EditFragment extends Fragment {
 
     private class btResetListener implements View.OnClickListener {
         @Override
-        public void onClick(View v) {
-            // TODO: Confirm action
-            resetView();
-            Toast.makeText(v.getContext(), "所有欄位已被重設", Toast.LENGTH_SHORT).show();
+        public void onClick(final View v) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setTitle("確認");
+            builder.setMessage("確定要清除欄位嗎？");
+            builder.setPositiveButton("確定", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    resetView();
+                    Toast.makeText(v.getContext(), "所有欄位已被重設", Toast.LENGTH_SHORT).show();
+                }});
+            builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {  dialog.cancel(); }});
+            builder.create().show();
         }
     }
 
@@ -109,7 +121,6 @@ public class EditFragment extends Fragment {
         
         @Override
         public void onClick(View v) {
-            // TODO: Confirm action
             if (month == null || !month.matches("\\d{2,}-\\d{4}")) {
                 Toast.makeText(v.getContext(), "請選擇有效月份", Toast.LENGTH_SHORT).show();
                 return;
@@ -123,7 +134,20 @@ public class EditFragment extends Fragment {
             user = v.getContext().getString(R.string.username);
             host = v.getContext().getString(R.string.server_ip);
             port = v.getContext().getString(R.string.server_port);
-            buildXmlAndSubmit();
+
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setTitle("確認");
+            builder.setMessage("確定要送出嗎？");
+            builder.setPositiveButton("確定", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    buildXmlAndSubmit();
+                }});
+            builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {  dialog.cancel(); }});
+            builder.create().show();
             /*
             Toast.makeText(v.getContext(), "發票號碼已送出", Toast.LENGTH_SHORT).show();
             Toast.makeText(v.getContext(), "使用者："+user, Toast.LENGTH_SHORT).show();

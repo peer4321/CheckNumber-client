@@ -79,6 +79,7 @@ public class NumberLoader {
                     if (host == null || port == null) throw new IOException();
                     String url = "http://" + host + ":" + port + "/browse.xml?"+
                             "u=" + user + "&y=" + year + "&m=" + month;
+                    Log.d(TAG, HttpReader.getData((url)));
                     xpp.setInput(new StringReader(HttpReader.getData(url)));
                     int eventType = xpp.getEventType();
                     String name;
@@ -98,7 +99,7 @@ public class NumberLoader {
                             case XmlPullParser.END_TAG:
                                 name = xpp.getName();
                                 if ("record".equals(name)) {
-                                    if (!number.equals("") && !memo.equals("")) {
+                                    if (!number.equals("")) {
                                         Log.d(TAG, "number = " + number + ", memo = " + memo);
                                         list.add(new Record(number, memo));
                                     }

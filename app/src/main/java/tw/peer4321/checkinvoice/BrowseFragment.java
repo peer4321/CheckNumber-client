@@ -1,5 +1,7 @@
 package tw.peer4321.checkinvoice;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
@@ -75,8 +77,8 @@ public class BrowseFragment extends Fragment {
         MainActivity activity = (MainActivity) getActivity();
         AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
         NumberLoader.Record record = (NumberLoader.Record) listAdapter.getItem(info.position);
-        int monthPosition = monthSpinner.getSelectedItemPosition();
-        String number = record.getNumber(), memo = record.getMemo();
+        final int monthPosition = monthSpinner.getSelectedItemPosition();
+        final String number = record.getNumber(), memo = record.getMemo();
         switch (item.getItemId()) {
             case R.id.recordEdit:
                 Log.d(TAG, "edit");
@@ -84,10 +86,20 @@ public class BrowseFragment extends Fragment {
                 return true;
             case R.id.recordDelete:
                 Log.d(TAG, "delete");
-                // TODO: Confirm check
-                String str = dataAdapter.getItem(monthPosition);
-                String year = str.split("-")[0], month = str.split("-")[1];
-                listAdapter.delete(year, month, number);
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setTitle("確認");
+                builder.setMessage("確定要刪除本記錄嗎？");
+                builder.setPositiveButton("確定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        String str = dataAdapter.getItem(monthPosition);
+                        String year = str.split("-")[0], month = str.split("-")[1];
+                        listAdapter.delete(year, month, number);
+                    }});
+                builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {  dialog.cancel(); }});
+                builder.create().show();
                 return true;
             default:
                 return super.onContextItemSelected(item);
@@ -127,8 +139,6 @@ public class BrowseFragment extends Fragment {
                 @Override
                 public void run() {
                     swipeLayout.setRefreshing(false);
-                    //monthSpinner.setSelection(0);
-                    //((MainActivity)getActivity()).showToast("Refreshed");
                 }
             }, 3000);
         }
